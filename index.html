@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Pushover for Perfex CRM Classic | Granulr setup guide</title>
+    <meta name="description" content="Install and configure Granulr's Pushover Notifications module for Perfex CRM Classic with illustrated setup and troubleshooting steps.">
+    <style>
+        :root { color:#24212a; background:#f6f4f7; font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+        * { box-sizing:border-box; }
+        body { margin:0; }
+        a { color:#a0174b; text-underline-offset:.17em; }
+        a:focus-visible { outline:3px solid #b31750; outline-offset:3px; }
+        .skip { position:absolute; top:.5rem; left:.5rem; transform:translateY(-200%); padding:.5rem .7rem; background:#fff; }
+        .skip:focus { transform:none; }
+        .hero { color:#fff; background:radial-gradient(ellipse at 88% 18%,#421229,#18171c 64%); border-bottom:4px solid #ff105b; }
+        .hero-inner,.layout,footer { max-width:73rem; margin-inline:auto; padding-inline:clamp(1rem,4vw,2rem); }
+        .hero-inner { padding-block:2.3rem 2.5rem; }
+        .mark { width:8rem; height:auto; display:block; margin-bottom:1.15rem; }
+        .rule { width:2rem; height:3px; border-radius:2px; background:#ff105b; margin-bottom:.85rem; }
+        h1,h2 { line-height:1.2; letter-spacing:-.025em; }
+        h1 { font-size:clamp(2rem,5vw,3.1rem); margin:0; }
+        h2 { font-size:clamp(1.35rem,3vw,1.85rem); margin:0 0 .8rem; }
+        .edition { color:#f5eaf1; margin:.7rem 0 0; font-weight:650; }
+        .version { color:#e3d4de; margin:.4rem 0 0; font-size:.92rem; }
+        .layout { display:grid; grid-template-columns:13rem minmax(0,1fr); align-items:start; gap:1.5rem; padding-block:1.5rem 2rem; }
+        nav { position:sticky; top:1rem; }
+        nav,section { background:#fff; border:1px solid #e6e0e8; border-radius:.75rem; }
+        nav { padding:1rem; }
+        nav p { font-weight:700; margin:0; }
+        nav ul { list-style:none; margin:.35rem 0 0; padding:0; }
+        nav a { display:block; padding-block:.24rem; }
+        section { padding:clamp(1rem,3vw,1.75rem); margin-bottom:1rem; scroll-margin-top:1rem; }
+        section > :last-child { margin-bottom:0; }
+        li + li { margin-top:.4rem; }
+        code { border-radius:.2rem; padding:.09em .29em; background:#f1edf2; overflow-wrap:anywhere; }
+        .note { padding:.75rem .95rem; border-left:3px solid #ff105b; background:#fff2f6; }
+        figure { margin:1.15rem 0; }
+        figure img { display:block; width:100%; height:auto; border:1px solid #dfd8e3; border-radius:.45rem; }
+        figure a { display:block; }
+        figcaption { margin-top:.4rem; color:#534b59; font-size:.9rem; }
+        footer { color:#534b59; padding-bottom:1.5rem; }
+        @media(max-width:740px) { .layout { grid-template-columns:minmax(0,1fr); gap:1rem; } nav { position:static; } }
+    </style>
+</head>
+<body>
+    <a class="skip" href="#guide">Skip to setup guide</a>
+    <header class="hero">
+        <div class="hero-inner">
+            <img class="mark" src="images/granulr-logo.png" width="505" height="125" alt="Granulr">
+            <div class="rule" aria-hidden="true"></div>
+            <h1>Pushover Notifications</h1>
+            <p class="edition">For Perfex CRM Classic (CodeIgniter) only</p>
+            <p class="version">Setup guide for module version 1.0.7</p>
+        </div>
+    </header>
+    <div class="layout">
+        <nav aria-label="Guide contents">
+            <p>On this page</p>
+            <ul>
+                <li><a href="#install">Install or update</a></li>
+                <li><a href="#connect">Connect Pushover</a></li>
+                <li><a href="#test">Send a test notification</a></li>
+                <li><a href="#events">Choose notification events</a></li>
+                <li><a href="#troubleshoot">Troubleshooting and support</a></li>
+                <li><a href="#changes">Changes in 1.0.7</a></li>
+            </ul>
+        </nav>
+        <main id="guide">
+            <section id="install">
+                <h2>Install or update</h2>
+                <p>Requires a self-hosted installation of <strong>Perfex CRM Classic (CodeIgniter) 3.4.1 or later</strong>,
+                    PHP 8.1 or later with cURL and mbstring, and administrator access. The server needs a working certificate
+                    store and HTTPS access to <code>api.pushover.net</code>.</p>
+                <ol>
+                    <li>Extract the CodeCanyon download and locate the inner <code>pushover.zip</code>.</li>
+                    <li>For a first install, open <strong>Setup → Modules</strong>, upload <code>pushover.zip</code> and activate Pushover.</li>
+                    <li>To update an earlier CodeCanyon release, back up the database and <code>modules/pushover</code>.
+                        Upload the inner ZIP through <strong>Setup → Modules</strong> or replace the module files.
+                        Run the module database upgrade when Perfex offers it. The upgrade preserves saved settings.</li>
+                </ol>
+                <p class="note">Earlier releases recorded the recipient key in the Activity Log. The 1.0.7 upgrade redacts
+                    keys in entries that use the original English format. Check older backups, exports and customised log messages
+                    separately. If a key was exposed, replace it in Pushover and save the new key in Perfex.</p>
+            </section>
+            <section id="connect">
+                <h2>Connect Pushover</h2>
+                <ol>
+                    <li>Register an application in Pushover and copy its API token. You can set a notification icon
+                        when editing the Pushover application. <a href="https://pushover.net/apps/build">Register a Pushover application</a>.</li>
+                    <li>Copy your Pushover user key or create a delivery group and copy its group key. Everyone in a group
+                        can see alert previews, so include only people authorised to receive them.
+                        <a href="https://pushover.net/groups/build">Create a delivery group</a>.</li>
+                    <li>In Perfex, open <strong>Setup → Settings → Integrations → Pushover Notifications</strong>.
+                        Enter both credentials and select <strong>Save Settings</strong>.</li>
+                    <li>For later changes, leave a saved credential field blank to keep its value. If the form reports an
+                        invalid credential, correct it and save again.</li>
+                </ol>
+                <figure>
+                    <a href="images/01-connect-pushover.jpg"><img src="images/01-connect-pushover.jpg" width="1007" height="269" alt="Pushover Notifications under Integrations, showing the masked App Token and User or group key fields." loading="lazy"></a>
+                    <figcaption>Perfex test installation. Saved credentials appear as placeholders.</figcaption>
+                </figure>
+            </section>
+            <section id="test">
+                <h2>Send a test notification</h2>
+                <ol>
+                    <li>Save both credentials, then select <strong>Send test notification</strong>. The test uses the saved recipient at normal priority.</li>
+                    <li>When Perfex reports that Pushover queued the message, check a device registered to that recipient.</li>
+                    <li>To check a routine alert and its link, create a test lead or submit a web-to-lead form.
+                        Open the notification and sign in to Perfex to view the lead.</li>
+                </ol>
+                <figure>
+                    <a href="images/02-test-notification.jpg"><img src="images/02-test-notification.jpg" width="746" height="293" alt="The Send test notification button shows the message that Pushover queued the test." loading="lazy"></a>
+                    <figcaption>Perfex test installation with a simulated Pushover API response. Check the recipient device to confirm delivery.</figcaption>
+                </figure>
+            </section>
+            <section id="events">
+                <h2>Choose notification events</h2>
+                <p>Under <strong>Notification events</strong>, switch alerts on or off individually, then save.
+                    The seven existing alert types start enabled. <strong>Task completed</strong> and
+                    <strong>Estimate accepted by customer</strong> start off. The test button works with all events switched off.</p>
+                <p>Under <strong>Ticket replies</strong>, choose client replies only, staff and client replies, or none.
+                    Enable <strong>New Ticket Reply</strong> under Notification events for the reply preference to take effect.
+                    Under <strong>Notification defaults</strong>, choose a priority and sound for routine alerts.</p>
+                <figure>
+                    <a href="images/03-notification-events.jpg"><img src="images/03-notification-events.jpg" width="746" height="359" alt="Nine event checkboxes, with Task completed and Estimate accepted by customer unchecked by default." loading="lazy"></a>
+                    <figcaption>Default notification events in a Perfex test installation.</figcaption>
+                </figure>
+            </section>
+            <section id="troubleshoot">
+                <h2>Troubleshooting and support</h2>
+                <ul>
+                    <li>If the test is rejected, check the saved token and recipient key and confirm the recipient has an active Pushover device.</li>
+                    <li>If Perfex cannot connect, check the server’s outbound HTTPS connection, certificate store and PHP cURL extension.</li>
+                    <li>If an individual CRM alert fails, check its event switch and <strong>Utilities → Activity Log</strong>.</li>
+                    <li>Pushover shares its free monthly allowance across each account’s apps. Standard accounts get 10,000
+                        messages per month and Teams get 25,000. Each recipient in a group uses one message.
+                        <a href="https://pushover.net/api#limits">Pushover message limits</a>.</li>
+                </ul>
+                <p>For module support, sign in with the CodeCanyon account used to buy the module and select <strong>Contact Author</strong>.
+                    Share your Perfex and module versions, the alert affected and the test result. Keep credentials private.
+                    <a href="https://codecanyon.net/item/pushover-instant-support-notifications-for-perfex-crm/25396657/support">Pushover module support</a>.</p>
+            </section>
+            <section id="changes">
+                <h2>Changes in 1.0.7</h2>
+                <ul>
+                    <li>Fixed web-to-lead alerts, client-only ticket replies, task and comment handling, and alerts for projects without descriptions.</li>
+                    <li>Moved settings into the native Perfex Classic integration layout, masked saved credentials and validated the entire submission before saving.</li>
+                    <li>Added switches for every alert, with opt-in alerts for task completion and customer estimate acceptance.</li>
+                    <li>Added the test notification, verified HTTPS delivery requests and redacted historical keys during upgrades.</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+    <footer>Granulr · Pushover Notifications for Perfex CRM Classic</footer>
+</body>
+</html>
